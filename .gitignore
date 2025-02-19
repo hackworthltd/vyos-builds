@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Emacs
+*~
+.tramp_history
+
+# Nix
+result
+result-*
+
+# direnv
+.direnv/
+.envrc
+
+# pre-commit-hooks
+.pre-commit-config.yaml

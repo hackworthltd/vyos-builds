@@ -160,20 +160,20 @@
             inherit (inputs.self) checks;
             inherit (inputs.self) packages;
             inherit (inputs.self) devShells;
-          };
 
-          required = pkgs.releaseTools.aggregate {
-            name = "required-nix-ci";
-            constituents = builtins.map builtins.attrValues (
-              with inputs.self.hydraJobs;
-              [
-                packages.x86_64-linux
-                packages.aarch64-darwin
-                checks.x86_64-linux
-                checks.aarch64-darwin
-              ]
-            );
-            meta.description = "Required Nix CI builds";
+            required = pkgs.releaseTools.aggregate {
+              name = "required-nix-ci";
+              constituents = builtins.map builtins.attrValues (
+                with inputs.self.hydraJobs;
+                [
+                  packages.x86_64-linux
+                  packages.aarch64-darwin
+                  checks.x86_64-linux
+                  checks.aarch64-darwin
+                ]
+              );
+              meta.description = "Required Nix CI builds";
+            };
           };
 
           ciJobs = pkgs.lib.flakes.recurseIntoHydraJobs inputs.self.hydraJobs;

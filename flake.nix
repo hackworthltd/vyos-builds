@@ -129,6 +129,7 @@
               nodePackages.prettier
               vscode-langservers-extracted
 
+              act
               docker
               git
             ];

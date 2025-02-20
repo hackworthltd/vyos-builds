@@ -20,6 +20,8 @@
 
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    pkgs-by-name-for-flake-parts.url = "github:drupol/pkgs-by-name-for-flake-parts";
   };
 
   outputs =
@@ -44,6 +46,12 @@
         inputs.hacknix.overlays.default
       ];
 
+      formattingExcludes = [
+        "CODE_OF_CONDUCT.md"
+        "LICENSE"
+        "flake.lock"
+      ];
+
     in
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       debug = true;
@@ -53,6 +61,7 @@
       imports = [
         inputs.treefmt-nix.flakeModule
         inputs.git-hooks-nix.flakeModule
+        inputs.pkgs-by-name-for-flake-parts.flakeModule
       ];
 
       perSystem =
@@ -92,11 +101,7 @@
                 };
               };
 
-              excludes = [
-                "CODE_OF_CONDUCT.md"
-                "LICENSE"
-                "flake.lock"
-              ];
+              excludes = formattingExcludes;
             };
           };
 
@@ -106,9 +111,10 @@
               prettier.enable = true;
               nixfmt.enable = true;
             };
+            settings.formatter.prettier.excludes = formattingExcludes;
           };
 
-          packages.default = pkgs.hello-unfree;
+          pkgsDirectory = ./nix/pkgs;
 
           devShells.default = pkgs.mkShell {
             inputsFrom = [
@@ -122,12 +128,51 @@
               nodejs
               nodePackages.prettier
               vscode-langservers-extracted
+
+              docker
+              git
             ];
 
             shellHook = ''
               ${config.pre-commit.installationScript}
             '';
           };
+        };
+
+      flake =
+        let
+          # See above, we need to use our own `pkgs` within the flake.
+          pkgs = import inputs.nixpkgs {
+            system = "x86_64-linux";
+            config = {
+              allowUnfree = true;
+              allowBroken = true;
+            };
+            overlays = allOverlays;
+          };
+        in
+        {
+          hydraJobs = {
+            inherit (inputs.self) checks;
+            inherit (inputs.self) packages;
+            inherit (inputs.self) devShells;
+          };
+
+          required = pkgs.releaseTools.aggregate {
+            name = "required-nix-ci";
+            constituents = builtins.map builtins.attrValues (
+              with inputs.self.hydraJobs;
+              [
+                packages.x86_64-linux
+                packages.aarch64-darwin
+                checks.x86_64-linux
+                checks.aarch64-darwin
+              ]
+            );
+            meta.description = "Required Nix CI builds";
+          };
+
+          ciJobs = pkgs.lib.flakes.recurseIntoHydraJobs inputs.self.hydraJobs;
         };
     };
 }

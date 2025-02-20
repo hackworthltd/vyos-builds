@@ -10,7 +10,7 @@ are passed to the BuildX 'build' command.
 
 Unless overridden, the image will be built with the tag
 
-vyos-build:<git-rev>
+hackworthltd/vyos-build:<git-rev>
 
 where <git-rev> is the short git-rev of the 'vyos-build' submodule.
 EOF
@@ -52,7 +52,7 @@ git_ref=$(git rev-parse --short HEAD)
 cd .. || exit 4
 
 # Build the image.
-tag="vyos-build:git-${git_ref}"
+tag="hackworthltd/vyos-build:git-${git_ref}"
 shift
 build_cmd="docker buildx build -t $tag $* $DOCKER_DIR"
 echo "Running build command:"

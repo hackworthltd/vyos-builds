@@ -1,3 +1,3 @@
-# nix-flake-templates
+# vyos-builds
 
-Hackworth Ltd's opinionated Nix flake templates.
+Hackworth Ltd's VyOS builds.
